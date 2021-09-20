@@ -1,6 +1,7 @@
 import Package from "../lib/package";
 import PackageUpload from "./package-upload.vue";
 import PackageDetails from "./package-details.vue";
+import Version from "../lib/version";
 
 export default {
     mixins: [Package, Theme.Mixins.Helper],
@@ -12,20 +13,16 @@ export default {
                 view: false,
                 updates: null,
                 search: this.$session.get(`${this.$options.name}.search`, ""),
-                status: "",
+                status: ""
             },
             window.$data
         );
     },
 
-    mounted() {
-        //this.load();
-    },
-
     watch: {
         search(search) {
             this.$session.set(`${this.$options.name}.search`, search);
-        },
+        }
     },
 
     methods: {
@@ -34,12 +31,12 @@ export default {
 
             if (this.packages) {
                 this.queryUpdates(this.packages).then(
-                    function (res) {
+                    function(res) {
                         const data = res;
                         this.$set(this, "updates", data.packages.length ? _.keyBy(data.packages, "name") : null);
                         this.$set(this, "status", "");
                     },
-                    function () {
+                    function() {
                         this.$set(this, "status", "error");
                     }
                 );
@@ -91,10 +88,25 @@ export default {
         empty(packages) {
             return this.filterBy(packages, this.search, "title").length === 0;
         },
+
+        isUpdate(packageName, packageVersion) {
+            const system_api = this.api;
+            this.$http.get(`${system_api}/api/atomy/app_store_packages/getversion`, {
+                params: {
+                    package_name: packageName
+                }
+            }).then((res) => {
+                const lastPackageVersion = res.data;
+                console.log(Version.compare(lastPackageVersion, packageVersion, ">"))
+                return Version.compare(lastPackageVersion, packageVersion, ">");
+            }).catch(() => {
+                return false;
+            });
+        }
     },
 
     components: {
         "package-upload": PackageUpload,
-        "package-details": PackageDetails,
-    },
+        "package-details": PackageDetails
+    }
 };

@@ -182,17 +182,16 @@ class PackageController
 
     /**
      * @param int $id
-     * @param string $type
      * @return array|null
-     * @Request({"id":"integer","type":"string"}, csrf=true)
+     * @Request({"package_name":"string"}, csrf=true)
      */
-    public function downloadPackageAction(int $id, string $type)
+    public function downloadPackageAction(string $package_name)
     {
-        if (!$id) {
+        if (!$package_name) {
             App::abort(404, __("Not Found ID"));
         }
 
-        $url = App::get("system.api") . "/marketplace/download/" . $id;
+        $url = App::get("system.api") . "/api/atomy/app_store_packages/download?package_name=" . $package_name;
 
         $file = App::file();
 
@@ -205,7 +204,7 @@ class PackageController
         $curl->setOpt(CURLOPT_TIMEOUT, 1000);
         $curl->setOpt(CURLOPT_CONNECTTIMEOUT, 1000);
         $curl->setOpt(CURLOPT_RETURNTRANSFER, true);
-        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, true);
+        $curl->setOpt(CURLOPT_SSL_VERIFYPEER, false);
         $curl->download($url, $zip_name);
 
         if ($curl->error) {

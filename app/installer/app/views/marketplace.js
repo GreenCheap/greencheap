@@ -8,7 +8,7 @@ const marketplace = {
             {
                 pkgs: false,
                 config: {
-                    filter: this.$session.get("pkgs-front.filter", { order: "download_count desc", type: "greencheap-extension" }),
+                    filter: this.$session.get("pkgs-atomy.filter", { status: 2, order: "download_count desc" })
                 },
                 pages: 0,
                 count: "",
@@ -16,15 +16,14 @@ const marketplace = {
                 client: window.$client,
                 output: "",
                 isLoader: true,
-                status: "",
+                status: ""
             },
             window.$data
         );
     },
 
     mixins: [
-        // eslint-disable-next-line global-require
-        require("../../../system/app/lib/client"),
+        require("../../../system/app/lib/client")
     ],
 
     mounted() {
@@ -39,9 +38,9 @@ const marketplace = {
                 } else {
                     this.load();
                 }
-                this.$session.set("pkgs-front.filter", filter);
+                this.$session.set("pkgs-atomy.filter", filter);
             },
-            deep: true,
+            deep: true
         },
 
         pkgs: {
@@ -57,26 +56,26 @@ const marketplace = {
                         {
                             installed: controll
                                 ? {
-                                      name: controll.name,
-                                      version: controll.version,
-                                      type: controll.type,
-                                      update: this.checkVersion(pkg.version, controll.version, ">"),
-                                  }
-                                : false,
+                                    name: controll.name,
+                                    version: controll.version,
+                                    type: controll.type,
+                                    update: this.checkVersion(pkg.version, controll.version, ">")
+                                }
+                                : false
                         },
                         this.pkgs[key]
                     );
                 });
             },
-            deep: true,
-        },
+            deep: true
+        }
     },
 
     methods: {
         load() {
-            this.clientResource("marketplace/getfilters", {
-                filter: this.config.filter,
-                page: this.config.page,
+            this.clientResource("api/atomy/app_store_packages", {
+                filter: _.merge({ app_type: this.app_type }, this.config.filter),
+                page: this.config.page
             })
                 .then((res) => {
                     const { data } = res;
@@ -101,9 +100,13 @@ const marketplace = {
             this.$set(this, "modalpkg", pkg);
             this.$refs.modalDeatil.open();
         },
+        
+        getConvert(data){
+            return `data:image/svg+xml;base64,${window.btoa(data)}`
+        },
 
         getImage(data) {
-            return data.image.src;
+            return `${this.system_api}/${data}`;
         },
 
         downloadPackage(e) {
@@ -112,8 +115,8 @@ const marketplace = {
                 .get("admin/system/package/downloadpackage", {
                     params: {
                         id: this.modalpkg.id,
-                        type: this.modalpkg.type,
-                    },
+                        type: this.modalpkg.type
+                    }
                 })
                 .then((res) => {
                     const pkg = res.data.package;
@@ -137,7 +140,7 @@ const marketplace = {
                                 self.$refs.installDetail.open();
                                 self.output += "Starting\n\n";
                             }
-                        },
+                        }
                     }
                 )
                 .then((res) => {
@@ -157,7 +160,6 @@ const marketplace = {
             const lines = output.split("\n");
             const match = lines[lines.length - 1].match(/^status=(success|error)$/);
             if (match) {
-                // eslint-disable-next-line prefer-destructuring
                 this.status = match[1];
                 delete lines[lines.length - 1];
                 this.output += lines.join("\n");
@@ -167,18 +169,17 @@ const marketplace = {
         },
 
         cancelPkg() {
-            // eslint-disable-next-line no-restricted-globals
             this.modalpkg = false;
             location.reload();
         },
 
         enablePkg() {
             return this.$http.post("admin/system/package/enable", { name: this.modalpkg.package_name }).then(() => {
-                this.$notify(this.$trans('"%title%" enabled.', { title: this.modalpkg.title }));
+                this.$notify(this.$trans("\"%title%\" enabled.", { title: this.modalpkg.title }));
                 document.location.assign(this.$url(`admin/system/package/${this.modalpkg.type === "greencheap-theme" ? "themes" : "extensions"}`));
             }, this.error);
-        },
-    },
+        }
+    }
 };
 
 export default marketplace;

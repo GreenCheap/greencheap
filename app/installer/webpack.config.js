@@ -6,6 +6,7 @@ module.exports = [
             themes: "./app/views/themes",
             update: "./app/views/update",
             marketplace: "./app/views/marketplace",
+            package:"./app/views/package"
         },
         output: {
             filename: "./app/bundle/[name].js",

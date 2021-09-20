@@ -62,7 +62,7 @@ class PackageManager
     }
 
     /**
-     * @param  array $uninstall
+     * @param $uninstall
      * @return bool
      */
     public function uninstall($uninstall)
